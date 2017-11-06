@@ -64,7 +64,7 @@ export const Root = StackNavigator({
     headerMode: 'none',
 });
 
-styles = StyleSheet.create({
+let styles = StyleSheet.create({
     icon: {
         height: 25,
         width: 25

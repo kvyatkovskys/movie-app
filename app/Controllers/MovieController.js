@@ -1,34 +1,54 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ListView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, ListView, ActivityIndicator, Image } from 'react-native';
+import APIHandler from "../APIHandler";
 
-let width = Dimensions.get('window').width;
-const ROWS_IN_DATA_SOURCE = 10;
-const dataSource = [];
-for (let i=0; i<ROWS_IN_DATA_SOURCE; i++) dataSource.push(`This is the data for row # ${i+1}`);
-
-class MovieController extends Component {
+export default class MovieController extends Component {
     constructor(props){
         super(props);
-        let ds = new ListView.DataSource({
-            rowHasChanged: (r1, r2) => r1 !== r2
-        });
+        apiHandler = new APIHandler();
+
         this.state = {
-            dataSource: ds.cloneWithRows(dataSource),
-            db: dataSource,
+            isLoading: true,
         }
+    }
+
+    componentDidMount () {
+        apiHandler.loadDiscoverMovie()
+            .then((responseJson) => {
+                let ds = new ListView.DataSource({
+                    rowHasChanged: (r1, r2) => r1 !== r2
+                });
+                this.setState ({
+                    isLoading: false,
+                    dataSource: ds.cloneWithRows(responseJson.results),
+                }, function () {
+                    // new state
+                });
+        });
+
     }
 
     renderRow(rowData) {
         return (
             <View style={styles.row}>
                 <View style={styles.rowContainer}>
-                    <Text> {rowData} </Text>
+                    <Image style={styles.image}
+                           source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }} />
+                    <Text style={styles.text}>{rowData.title}</Text>
                 </View>
             </View>
         );
     }
 
     render() {
+        if (this.state.isLoading) {
+            return (
+                <View style={{flex: 1, paddingTop: 30}}>
+                    <ActivityIndicator />
+                </View>
+            );
+        }
+
         return (
             <View style={styles.table}>
                 <ListView
@@ -40,15 +60,12 @@ class MovieController extends Component {
     }
 }
 
-export default MovieController;
-
 let styles = StyleSheet.create({
     table: {
         flex: 1,
         backgroundColor: 'white',
     },
     row: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
         marginTop: 20,
@@ -56,13 +73,32 @@ let styles = StyleSheet.create({
     },
     rowContainer: {
         flex: .9,
+        flexDirection: 'row',
         justifyContent: 'center',
         height: 290,
         backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 20,
+        borderRadius: 5,
         shadowOpacity: 0.75,
-        shadowRadius: 10,
-        shadowColor: 'lightgrey',
-    }
+        shadowRadius: 5,
+        shadowColor: 'black',
+        shadowOffset: {
+            width: 2,
+            height: 10
+        },
+    },
+    image: {
+        flex: 1,
+        borderRadius: 5,
+    },
+    text: {
+        textAlign: 'center',
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        left: 10,
+        fontSize: 30,
+        fontWeight: 'bold',
+        color: 'white',
+        backgroundColor: 'transparent',
+    },
 });

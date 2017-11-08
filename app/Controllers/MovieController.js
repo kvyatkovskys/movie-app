@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, ListView, ActivityIndicator, Image } from 'react-native';
 import APIHandler from '../APIHandler';
+import { BlurView } from 'react-native-blur';
 
 export default class MovieController extends Component {
     constructor(props){
@@ -9,6 +10,7 @@ export default class MovieController extends Component {
 
         this.state = {
             isLoading: true,
+            viewRef: null
         }
     }
 
@@ -34,7 +36,17 @@ export default class MovieController extends Component {
                 <View style={styles.rowContainer}>
                     <Image style={styles.image}
                            source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }} />
-                    <Text style={styles.text}>{rowData.title}</Text>
+                    <BlurView style={styles.absolute}
+                              viewRef={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}
+                              blurType='dark'
+                              blurAmount={5}
+                    />
+                    <View style={styles.columnView}>
+                        <Image style={styles.imagePoster}
+                               source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.poster_path }}/>
+                        <Text style={styles.title}>{rowData.title}</Text>
+                        <Text style={styles.description}>{rowData.overview}</Text>
+                    </View>
                 </View>
             </View>
         );
@@ -66,16 +78,11 @@ let styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     row: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 20,
-        height: 300,
+        margin: 10,
+        height: 400,
     },
     rowContainer: {
-        flex: .9,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        height: 290,
+        height: 400,
         backgroundColor: 'white',
         borderRadius: 5,
         shadowOpacity: 0.75,
@@ -83,22 +90,47 @@ let styles = StyleSheet.create({
         shadowColor: 'black',
         shadowOffset: {
             width: 2,
-            height: 10
+            height: 5
         },
     },
     image: {
         flex: 1,
         borderRadius: 5,
     },
-    text: {
-        textAlign: 'center',
+    absolute: {
         position: 'absolute',
-        top: 10,
-        right: 10,
-        left: 10,
+        borderRadius: 5,
+        top: 0, left: 0, bottom: 0, right: 0,
+    },
+    columnView: {
+        position: 'absolute',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        top: 0, left: 0, bottom: 0, right: 0,
+    },
+    imagePoster: {
+        margin: 20,
+        height: 180,
+        width: 120,
+        borderRadius: 5,
+    },
+    title: {
+        left: 20,
+        marginRight: 20,
+        textAlign: 'left',
         fontSize: 30,
         fontWeight: 'bold',
         color: 'white',
         backgroundColor: 'transparent',
     },
+    description: {
+        textAlign: 'left',
+        top: 10,
+        bottom: 0,
+        marginLeft: 20, marginRight: 20,
+        fontSize: 14,
+        color: 'white',
+        backgroundColor: 'transparent',
+    }
 });

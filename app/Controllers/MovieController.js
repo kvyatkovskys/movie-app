@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, ListView, ActivityIndicator, Image } from 'react-native';
-import APIHandler from "../APIHandler";
+import APIHandler from '../APIHandler';
 
 export default class MovieController extends Component {
     constructor(props){

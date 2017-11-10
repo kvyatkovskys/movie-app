@@ -6,16 +6,6 @@ import { Icon } from 'react-native-elements';
 import MovieController from './Controllers/MovieController';
 import SettingsController from './Controllers/SettingsController';
 
-// navigator for Movie controller
-export const MovieStack = StackNavigator({
-    Movie: {
-        screen: MovieController,
-        navigationOptions: {
-            title: 'Movies'
-        }
-    }
-});
-
 // navigator for Settings controller
 export const SettingsStack = StackNavigator({
     Settings: {
@@ -24,7 +14,14 @@ export const SettingsStack = StackNavigator({
             title: 'Settings'
         }
     }
-})
+});
+
+// navigator for Movie controller
+export const MovieStack = StackNavigator({
+    Movie: {
+        screen: MovieController,
+    }
+});
 
 // tab bar controller
 export const Tabs = TabNavigator({
@@ -32,11 +29,11 @@ export const Tabs = TabNavigator({
         screen: MovieStack,
         navigationOptions: {
             tabBarLabel: 'Movies',
-            tabBarIcon: ({ tintColor }) =>
+            tabBarIcon: ({tintColor}) =>
                 <View style={styles.view}>
                     <Image
                         source={require('./Images/ic_movie.png')}
-                        style={[styles.icon, {tintColor: tintColor}]} />
+                        style={[styles.icon, {tintColor: tintColor}]}/>
                 </View>
         },
     },
@@ -44,13 +41,19 @@ export const Tabs = TabNavigator({
         screen: SettingsStack,
         navigationOptions: {
             tabBarLabel: 'Settings',
-            tabBarIcon: ({ tintColor }) =>
+            tabBarIcon: ({tintColor}) =>
                 <Icon
                     name='settings'
                     size={25}
                     color={tintColor}
                 />
         },
+    },
+}, {
+    animationEnabled: true,
+    lazy: true,
+    tabBarOptions: {
+        activeTintColor: '#e91e63',
     },
 });
 
@@ -71,5 +74,5 @@ let styles = StyleSheet.create({
     },
     view: {
         margin: -13,
-    }
+    },
 });

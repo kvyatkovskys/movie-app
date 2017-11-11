@@ -15,36 +15,49 @@ export default class MovieController extends Component {
     constructor(props){
         super(props);
         apiHandler = new APIHandler();
+        this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+        this.items = [];
 
         this.state = {
             isLoading: true,
             viewRef: null,
             selectedIndex: -1,
+            page: 1,
+            dataSource: this.ds.cloneWithRows([])
         };
 
-        this.updateIndex = this.updateIndex.bind(this)
+        this.updateIndex = this.updateIndex.bind(this);
+        this.loadMoreDiscover = this.loadMoreDiscover.bind(this);
     }
 
     updateIndex (selectedIndex) {
         this.setState({
             selectedIndex: selectedIndex
-        })
+        });
+    }
+
+    loadMoreDiscover () {
+        this.setState({
+            page: this.state.page + 1,
+        });
+        console.log(this.state.page)
+        apiHandler.loadDiscoverMovie(this.state.page)
+            .then((responseJson) => {
+                this.setState ({
+                    dataSource: this.ds.cloneWithRows(this.items.concat(responseJson.results)),
+                });
+        });
     }
 
     componentDidMount () {
-        apiHandler.loadDiscoverMovie()
+        apiHandler.loadDiscoverMovie(1)
             .then((responseJson) => {
-                let ds = new ListView.DataSource({
-                    rowHasChanged: (r1, r2) => r1 !== r2
-                });
+                this.items = responseJson.results;
                 this.setState ({
                     isLoading: false,
-                    dataSource: ds.cloneWithRows(responseJson.results),
-                }, function () {
-                    // new state
+                    dataSource: this.ds.cloneWithRows(responseJson.results),
                 });
         });
-
     }
 
     renderRow(rowData) {
@@ -64,7 +77,7 @@ export default class MovieController extends Component {
                             maxStars={5}
                             rating={rowData.vote_average/2}
                             emptyStarColor={'white'}
-                            starSize={20}
+                            starSize={15}
                             starColor={'white'}
                             starStyle={{
                                 backgroundColor: 'transparent',
@@ -89,7 +102,7 @@ export default class MovieController extends Component {
 
         if (this.state.isLoading) {
             return (
-                <View style={{flex: 1, paddingTop: 30}}>
+                <View style={{flex: 1, paddingTop: 100}}>
                     <ActivityIndicator />
                 </View>
             );
@@ -109,6 +122,7 @@ export default class MovieController extends Component {
                     style={{marginTop: 25}}
                     renderRow={this.renderRow.bind(this)}
                     dataSource={this.state.dataSource}
+                    onEndReached={this.loadMoreDiscover}
                 />
             </View>
         );

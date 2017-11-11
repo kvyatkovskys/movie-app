@@ -4,47 +4,47 @@ import APIHandler from '../APIHandler';
 import { BlurView } from 'react-native-blur';
 import { ButtonGroup } from 'react-native-elements';
 import Rating from 'react-native-star-rating';
-
-const buttons = ['Genre', 'Sort'];
+import PopoverTooltip from 'react-native-popover-tooltip';
 
 export default class MovieController extends Component {
     static navigationOptions = {
-            header: null
+        header: null
     };
 
     constructor(props){
         super(props);
         apiHandler = new APIHandler();
         this.ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-        this.items = [];
 
         this.state = {
             isLoading: true,
             viewRef: null,
             selectedIndex: -1,
-            page: 1,
-            dataSource: this.ds.cloneWithRows([])
+            page: 0,
+            dataSource: this.ds.cloneWithRows([]),
+            items: []
         };
 
         this.updateIndex = this.updateIndex.bind(this);
         this.loadMoreDiscover = this.loadMoreDiscover.bind(this);
     }
 
+    // select button in header view
     updateIndex (selectedIndex) {
         this.setState({
             selectedIndex: selectedIndex
         });
     }
 
+    // load more movies
     loadMoreDiscover () {
-        this.setState({
-            page: this.state.page + 1,
-        });
-        console.log(this.state.page)
-        apiHandler.loadDiscoverMovie(this.state.page)
+        apiHandler.loadDiscoverMovie(this.state.page + 1)
             .then((responseJson) => {
+                let newItems = this.state.items.concat(responseJson.results);
                 this.setState ({
-                    dataSource: this.ds.cloneWithRows(this.items.concat(responseJson.results)),
+                    page: this.state.page + 1,
+                    items: newItems,
+                    dataSource: this.ds.cloneWithRows(newItems)
                 });
         });
     }
@@ -52,10 +52,11 @@ export default class MovieController extends Component {
     componentDidMount () {
         apiHandler.loadDiscoverMovie(1)
             .then((responseJson) => {
-                this.items = responseJson.results;
                 this.setState ({
                     isLoading: false,
                     dataSource: this.ds.cloneWithRows(responseJson.results),
+                    items: responseJson.results,
+                    page: 1
                 });
         });
     }
@@ -65,12 +66,11 @@ export default class MovieController extends Component {
             <View style={styles.row}>
                 <View style={styles.rowContainer}>
                     <Image style={styles.image}
-                           source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }} />
+                           source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}/>
                     <BlurView style={styles.absolute}
                               viewRef={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}
                               blurType='dark'
-                              blurAmount={3}
-                    />
+                              blurAmount={3}/>
                     <View style={{position: 'absolute', top: 20, right: 20}}>
                         <Rating
                             disabled={true}
@@ -79,10 +79,7 @@ export default class MovieController extends Component {
                             emptyStarColor={'white'}
                             starSize={15}
                             starColor={'white'}
-                            starStyle={{
-                                backgroundColor: 'transparent',
-                            }}
-                        />
+                            starStyle={{backgroundColor: 'transparent'}}/>
                     </View>
                     <View style={styles.columnView}>
                         <Image style={styles.imagePoster}
@@ -102,28 +99,76 @@ export default class MovieController extends Component {
 
         if (this.state.isLoading) {
             return (
-                <View style={{flex: 1, paddingTop: 100}}>
-                    <ActivityIndicator />
+                <View style={{flex: 1, paddingTop: 200}}>
+                    <ActivityIndicator size="large"/>
                 </View>
             );
         }
 
         return (
             <View style={styles.table}>
-                <ButtonGroup
-                    containerBorderRadius={5}
-                    selectedTextStyle={styles.textSelectedGroup}
-                    onPress={this.updateIndex}
-                    selectedIndex={this.state.selectedIndex}
-                    buttons={buttons}
-                    containerStyle={styles.buttonGroup}/>
+                <View style={styles.buttonGroup}>
+                    <PopoverTooltip
+                        buttonComponent={
+                            <View style={styles.button}>
+                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
+                                    Genre
+                                </Text>
+                            </View>
+                        }
+                        items={[
+                            {
+                                label: 'Item 1',
+                                onPress: () => {}
+                            },
+                            {
+                                label: 'Item 2',
+                                onPress: () => {}
+                            }]
+                        }/>
+                    <PopoverTooltip
+                        buttonComponent={
+                            <View style={styles.button}>
+                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
+                                    Sort
+                                </Text>
+                            </View>
+                        }
+                        items={[
+                            {
+                                label: 'Item 1',
+                                onPress: () => {}
+                            },
+                            {
+                                label: 'Item 2',
+                                onPress: () => {}
+                            }]
+                        }/>
+                    <PopoverTooltip
+                        buttonComponent={
+                            <View style={styles.button}>
+                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
+                                    Year
+                                </Text>
+                            </View>
+                        }
+                        items={[
+                            {
+                                label: 'Item 1',
+                                onPress: () => {}
+                            },
+                            {
+                                label: 'Item 2',
+                                onPress: () => {}
+                            }]
+                        }/>
+                </View>
 
                 <ListView
                     style={{marginTop: 25}}
                     renderRow={this.renderRow.bind(this)}
                     dataSource={this.state.dataSource}
-                    onEndReached={this.loadMoreDiscover}
-                />
+                    onEndReached={this.loadMoreDiscover}/>
             </View>
         );
     }
@@ -177,8 +222,7 @@ let styles = StyleSheet.create({
         borderRadius: 5,
     },
     title: {
-        left: 20,
-        marginRight: 20,
+        marginBottom: 20, marginLeft: 20, marginRight: 20,
         textAlign: 'left',
         fontSize: 30,
         fontWeight: 'bold',
@@ -188,15 +232,21 @@ let styles = StyleSheet.create({
     description: {
         flex: 1,
         textAlign: 'left',
-        padding: 20,
-        marginBottom: 20,
+        marginBottom: 20, marginLeft: 20, marginRight: 20,
         fontSize: 14,
         color: 'white',
         backgroundColor: 'transparent',
     },
     buttonGroup: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
         top: 24,
-        height: 30,
+        height: 40,
+    },
+    button: {
+        height:30, width: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     textSelectedGroup: {
         color: '#e91e63',

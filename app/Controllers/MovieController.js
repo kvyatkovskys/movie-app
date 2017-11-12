@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ListView, ActivityIndicator, Image } from 'react-native';
+import { StyleSheet, Text, View, ListView, ActivityIndicator, Image, findNodeHandle, InteractionManager } from 'react-native';
 import APIHandler from '../APIHandler';
 import { BlurView } from 'react-native-blur';
 import { ButtonGroup } from 'react-native-elements';
@@ -22,7 +22,7 @@ export default class MovieController extends Component {
             selectedIndex: -1,
             page: 0,
             dataSource: this.ds.cloneWithRows([]),
-            items: []
+            items: [],
         };
 
         this.updateIndex = this.updateIndex.bind(this);
@@ -49,6 +49,13 @@ export default class MovieController extends Component {
         });
     }
 
+    //
+    imageLoaded() {
+        this.setState({
+            viewRef: findNodeHandle(this.blurImage)
+        });
+    }
+
     componentDidMount () {
         apiHandler.loadDiscoverMovie(1)
             .then((responseJson) => {
@@ -62,15 +69,19 @@ export default class MovieController extends Component {
     }
 
     renderRow(rowData) {
+        console.log(this.state.viewRef);
         return (
             <View style={styles.row}>
                 <View style={styles.rowContainer}>
-                    <Image style={styles.image}
-                           source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}/>
+                    <Image ref={(img) => { this.blurImage = img }}
+                        style={styles.image}
+                        source={{ uri: 'https://image.tmdb.org/t/p/w300' + rowData.backdrop_path }}
+                        onLoadEnd={this.imageLoaded.bind(this)}
+                    />
                     <BlurView style={styles.absolute}
-                              viewRef={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}
+                              viewRef={this.state.viewRef}
                               blurType='dark'
-                              blurAmount={3}/>
+                              blurAmount={1}/>
                     <View style={{position: 'absolute', top: 20, right: 20}}>
                         <Rating
                             disabled={true}
@@ -108,60 +119,29 @@ export default class MovieController extends Component {
         return (
             <View style={styles.table}>
                 <View style={styles.buttonGroup}>
-                    <PopoverTooltip
-                        buttonComponent={
-                            <View style={styles.button}>
-                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
-                                    Genre
-                                </Text>
-                            </View>
-                        }
-                        items={[
-                            {
-                                label: 'Item 1',
-                                onPress: () => {}
-                            },
-                            {
-                                label: 'Item 2',
-                                onPress: () => {}
-                            }]
-                        }/>
-                    <PopoverTooltip
-                        buttonComponent={
-                            <View style={styles.button}>
-                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
-                                    Sort
-                                </Text>
-                            </View>
-                        }
-                        items={[
-                            {
-                                label: 'Item 1',
-                                onPress: () => {}
-                            },
-                            {
-                                label: 'Item 2',
-                                onPress: () => {}
-                            }]
-                        }/>
-                    <PopoverTooltip
-                        buttonComponent={
-                            <View style={styles.button}>
-                                <Text style={{ color: '#e91e63', fontSize: 20 }}>
-                                    Year
-                                </Text>
-                            </View>
-                        }
-                        items={[
-                            {
-                                label: 'Item 1',
-                                onPress: () => {}
-                            },
-                            {
-                                label: 'Item 2',
-                                onPress: () => {}
-                            }]
-                        }/>
+                    <View style={styles.button}>
+                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                            Genre
+                        </Text>
+                    </View>
+
+                    <View style={styles.button}>
+                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                            Sort
+                        </Text>
+                    </View>
+
+                    <View style={styles.button}>
+                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                            Year
+                        </Text>
+                    </View>
+
+                    <View style={styles.button}>
+                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                            Serials
+                        </Text>
+                    </View>
                 </View>
 
                 <ListView
@@ -244,9 +224,12 @@ let styles = StyleSheet.create({
         height: 40,
     },
     button: {
-        height:30, width: 100,
+        height:30, minWidth: 70,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderWidth: 1,
+        borderRadius: 15,
+        borderColor: '#e91e63',
     },
     textSelectedGroup: {
         color: '#e91e63',

@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ListView, ActivityIndicator, Image, findNodeHandle, InteractionManager } from 'react-native';
+import { StyleSheet, Text, View, ListView, ActivityIndicator, Image, findNodeHandle, Platform, InteractionManager } from 'react-native';
 import APIHandler from '../APIHandler';
-import { BlurView } from 'react-native-blur';
-import { ButtonGroup } from 'react-native-elements';
 import Rating from 'react-native-star-rating';
-import PopoverTooltip from 'react-native-popover-tooltip';
 
 export default class MovieController extends Component {
     static navigationOptions = {
@@ -18,7 +15,6 @@ export default class MovieController extends Component {
 
         this.state = {
             isLoading: true,
-            viewRef: null,
             selectedIndex: -1,
             page: 0,
             dataSource: this.ds.cloneWithRows([]),
@@ -49,13 +45,6 @@ export default class MovieController extends Component {
         });
     }
 
-    //
-    imageLoaded() {
-        this.setState({
-            viewRef: findNodeHandle(this.blurImage)
-        });
-    }
-
     componentDidMount () {
         apiHandler.loadDiscoverMovie(1)
             .then((responseJson) => {
@@ -69,19 +58,12 @@ export default class MovieController extends Component {
     }
 
     renderRow(rowData) {
-        console.log(this.state.viewRef);
         return (
             <View style={styles.row}>
                 <View style={styles.rowContainer}>
-                    <Image ref={(img) => { this.blurImage = img }}
-                        style={styles.image}
-                        source={{ uri: 'https://image.tmdb.org/t/p/w300' + rowData.backdrop_path }}
-                        onLoadEnd={this.imageLoaded.bind(this)}
-                    />
-                    <BlurView style={styles.absolute}
-                              viewRef={this.state.viewRef}
-                              blurType='dark'
-                              blurAmount={1}/>
+                    <Image style={styles.image}
+                        source={{ uri: 'https://image.tmdb.org/t/p/w500' + rowData.backdrop_path }}/>
+                    <View style={styles.backView}/>
                     <View style={{position: 'absolute', top: 20, right: 20}}>
                         <Rating
                             disabled={true}
@@ -120,25 +102,25 @@ export default class MovieController extends Component {
             <View style={styles.table}>
                 <View style={styles.buttonGroup}>
                     <View style={styles.button}>
-                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                        <Text style={styles.textButton}>
                             Genre
                         </Text>
                     </View>
 
                     <View style={styles.button}>
-                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                        <Text style={styles.textButton}>
                             Sort
                         </Text>
                     </View>
 
                     <View style={styles.button}>
-                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                        <Text style={styles.textButton}>
                             Year
                         </Text>
                     </View>
 
                     <View style={styles.button}>
-                        <Text style={{ color: '#e91e63', fontSize: 15 }}>
+                        <Text style={styles.textButton}>
                             Serials
                         </Text>
                     </View>
@@ -165,15 +147,23 @@ let styles = StyleSheet.create({
     },
     rowContainer: {
         height: 400,
-        backgroundColor: 'white',
         borderRadius: 5,
-        shadowOpacity: 0.75,
-        shadowRadius: 5,
-        shadowColor: 'black',
-        shadowOffset: {
-            width: 2,
-            height: 5
-        },
+        ...Platform.select({
+            ios: {
+                backgroundColor: 'white',
+                shadowOpacity: 0.75,
+                shadowRadius: 5,
+                shadowColor: 'black',
+                shadowOffset: {
+                    width: 2,
+                    height: 5
+                },
+            },
+            android: {
+                backgroundColor: 'black',
+                elevation: 10,
+            }
+        }),
     },
     image: {
         flex: 1,
@@ -183,6 +173,13 @@ let styles = StyleSheet.create({
         position: 'absolute',
         borderRadius: 5,
         top: 0, left: 0, bottom: 0, right: 0,
+    },
+    backView: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'black',
+        borderRadius: 5,
+        opacity: 0.6
     },
     columnView: {
         position: 'absolute',
@@ -220,18 +217,26 @@ let styles = StyleSheet.create({
     buttonGroup: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        top: 24,
-        height: 40,
+        ...Platform.select({
+            ios: {
+                paddingTop: 40, paddingBottom: 20,
+            },
+            android: {
+                paddingTop: 30, paddingBottom: 30,
+            },
+        }),
+        height: 60,
     },
     button: {
-        height:30, minWidth: 70,
+        height:30, minWidth: 80,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderRadius: 15,
-        borderColor: '#e91e63',
+        borderRadius: 10,
+        borderColor: 'black',
     },
-    textSelectedGroup: {
-        color: '#e91e63',
+    textButton: {
+        color: 'black',
+        fontSize: 15,
     },
 });

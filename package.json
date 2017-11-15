@@ -9,7 +9,6 @@
 	"dependencies": {
 		"react": "^16.1.0",
 		"react-native": "^0.50.3",
-		"react-native-blur": "^3.2.2",
 		"react-native-elements": "^0.18.2",
 		"react-native-popover-tooltip": "^1.1.4",
 		"react-native-star-rating": "^1.0.8",

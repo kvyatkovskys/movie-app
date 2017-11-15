@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View, Platform } from 'react-native';
 import { TabNavigator, StackNavigator } from 'react-navigation';
 import { Icon } from 'react-native-elements';
 
@@ -54,7 +54,24 @@ export const Tabs = TabNavigator({
     swipeEnabled: true,
     lazy: true,
     tabBarOptions: {
-        activeTintColor: '#e91e63',
+        ...Platform.select({
+            ios: {
+
+            },
+            android: {
+                pressColor: 'black',
+                labelStyle: {
+                    color: 'gray',
+                },
+                style: {
+                    backgroundColor: 'white',
+                },
+                indicatorStyle: {
+                    backgroundColor: 'black',
+                },
+            },
+        }),
+        activeTintColor: 'black',
     },
 });
 
